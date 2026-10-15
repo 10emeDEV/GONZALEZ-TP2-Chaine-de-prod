@@ -1,4 +1,6 @@
 {
+    "name": "10emedev/symfony-contact-app",
+    "description": "Symfony contact management application",
     "type": "project",
     "license": "proprietary",
     "minimum-stability": "dev",
