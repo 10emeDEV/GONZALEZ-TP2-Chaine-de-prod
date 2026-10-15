@@ -11,6 +11,23 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: symfony_test
+          MYSQL_USER: symfony
+          MYSQL_PASSWORD: symfony
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    env:
+      # Doctrine appends "_test" to the database name in the test env (dbname_suffix),
+      # so this resolves to the "symfony_test" database created by the service.
+      DATABASE_URL: mysql://symfony:symfony@127.0.0.1:3306/symfony?serverVersion=8.0&charset=utf8mb4
+
     steps:
       - uses: actions/checkout@v3
 
@@ -26,6 +43,11 @@ jobs:
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
+
+      - name: Setup test database
+        run: |
+          php bin/console doctrine:migrations:migrate --no-interaction --env=test
+          php bin/console doctrine:fixtures:load --no-interaction --env=test
 
       - name: Run tests
         run: php bin/phpunit
